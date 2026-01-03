@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"OrderAPI/internal/auth"
+	"OrderAPI/internal/client"
 	"OrderAPI/internal/service"
 	"encoding/json"
 	"net/http"
@@ -8,25 +10,41 @@ import (
 )
 
 type OrderHandler struct {
-	service service.OrderService
+	service       service.OrderService
+	userClient    *client.UserClient
+	catalogClient *client.CatalogClient
 }
 
-func NewOrderHandler(service service.OrderService) *OrderHandler {
-	return &OrderHandler{service: service}
+func NewOrderHandler(service service.OrderService, userClient *client.UserClient, catalogClient *client.CatalogClient) *OrderHandler {
+	return &OrderHandler{
+		service:       service,
+		userClient:    userClient,
+		catalogClient: catalogClient,
+	}
 }
 
 func (s *OrderHandler) CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var req struct {
-		Amount int64 `json:"amount"`
+		Amount    int64 `json:"amount"`
+		ProductID int64 `json:"productId"`
 	}
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid json", http.StatusBadRequest)
 		return
 	}
-
-	order, err := s.service.CreateOrder(ctx, req.Amount)
+	if req.ProductID <= 0 || req.Amount <= 0 {
+		http.Error(w, "invalid request data", http.StatusBadRequest)
+		return
+	}
+	userID, err := auth.UserIDFromContext(ctx)
+	if err != nil {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	order, err := s.service.CreateOrder(ctx, req.Amount, req.ProductID, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

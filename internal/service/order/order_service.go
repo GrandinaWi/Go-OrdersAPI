@@ -22,13 +22,21 @@ func NewOrderService(repo repository.OrderRepository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) CreateOrder(ctx context.Context, amount int64) (*model.Order, error) {
+func (s *Service) CreateOrder(ctx context.Context, amount int64, product_id int64, user_id int64) (*model.Order, error) {
 	if amount <= 0 {
 		return nil, errors.New("amount must be greater than zero")
 	}
+	if product_id <= 0 {
+		return nil, errors.New("product_id must be greater than zero")
+	}
+	if user_id <= 0 {
+		return nil, errors.New("user_id must be greater than zero")
+	}
 	order := &model.Order{
-		Amount: amount,
-		Status: StatusNew,
+		Amount:    amount,
+		ProductID: product_id,
+		UserID:    user_id,
+		Status:    StatusNew,
 	}
 	if err := s.repo.Create(ctx, order); err != nil {
 		return nil, err

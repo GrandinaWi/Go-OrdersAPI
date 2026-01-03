@@ -1,6 +1,7 @@
 package main
 
 import (
+	"OrderAPI/internal/client"
 	"OrderAPI/internal/config"
 	"OrderAPI/pkg/postgres"
 	"context"
@@ -34,10 +35,17 @@ func main() {
 	log.Println("Connected to database")
 	defer db.Close()
 
+	userClient := client.NewUserClient(cfg.UserAPIURL)
+	catalogClient := client.NewCatalogClient(cfg.ProductAPIURL)
 	// === DI ===
 	orderRepo := repository.NewOrderRepository(db)
 	orderService := service.NewOrderService(orderRepo)
-	router := routes.NewRouter(orderService)
+
+	router := routes.NewRouter(
+		orderService,
+		userClient,
+		catalogClient,
+	)
 
 	// === HTTP server ===
 	server := &http.Server{

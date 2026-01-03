@@ -16,7 +16,7 @@ func NewOrderRepository(db *sql.DB) *OrderRepository {
 
 func (repository *OrderRepository) GetList(ctx context.Context) ([]model.Order, error) {
 	var orders []model.Order
-	rows, err := repository.db.Query("SELECT id,status,amount,created_at,updated_at FROM orders ORDER BY id")
+	rows, err := repository.db.Query("SELECT id,status,amount,product_id,user_id,created_at,updated_at FROM orders ORDER BY id")
 	if err == sql.ErrNoRows {
 		return orders, nil
 	}
@@ -30,6 +30,8 @@ func (repository *OrderRepository) GetList(ctx context.Context) ([]model.Order, 
 			&order.ID,
 			&order.Status,
 			&order.Amount,
+			&order.ProductID,
+			&order.UserID,
 			&order.CreatedAt,
 			&order.UpdatedAt,
 		); err != nil {
@@ -42,7 +44,7 @@ func (repository *OrderRepository) GetList(ctx context.Context) ([]model.Order, 
 }
 func (repository *OrderRepository) Create(ctx context.Context, order *model.Order) error {
 	query := `
-		INSERT INTO orders (status, amount)
+		INSERT INTO orders (status, amount,product_id, user_id)
 		VALUES ($1, $2)
 		RETURNING id, created_at, updated_at
 	`

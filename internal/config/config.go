@@ -6,8 +6,10 @@ import (
 )
 
 type Config struct {
-	HTTPPort    string
-	PostgresDSN string
+	HTTPPort      string
+	PostgresDSN   string
+	UserAPIURL    string
+	ProductAPIURL string
 }
 
 func LoadConfig() (*Config, error) {
@@ -19,8 +21,18 @@ func LoadConfig() (*Config, error) {
 	if postgresDSN == "" {
 		return nil, fmt.Errorf("POSTGRES_DSN is required")
 	}
+	userAPIURL := os.Getenv("USER_API_URL")
+	if userAPIURL == "" {
+		return nil, fmt.Errorf("USER_API_URL is required")
+	}
+	productAPIURL := os.Getenv("PRODUCT_API_URL")
+	if productAPIURL == "" {
+		return nil, fmt.Errorf("PRODUCT_API_URL is required")
+	}
 	return &Config{
-		HTTPPort:    port,
-		PostgresDSN: postgresDSN,
+		HTTPPort:      port,
+		PostgresDSN:   postgresDSN,
+		UserAPIURL:    userAPIURL,
+		ProductAPIURL: productAPIURL,
 	}, nil
 }
