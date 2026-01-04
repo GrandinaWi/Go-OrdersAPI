@@ -1,3 +1,3 @@
 package auth
 
-var JwtSecret = "super-secret-key"
+var JwtSecret = []byte("supersecret")

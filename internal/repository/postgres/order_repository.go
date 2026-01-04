@@ -44,11 +44,19 @@ func (repository *OrderRepository) GetList(ctx context.Context) ([]model.Order, 
 }
 func (repository *OrderRepository) Create(ctx context.Context, order *model.Order) error {
 	query := `
-		INSERT INTO orders (status, amount,product_id, user_id)
-		VALUES ($1, $2)
+		INSERT INTO orders (user_id, product_id, amount, status)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id, created_at, updated_at
 	`
-	return repository.db.QueryRowContext(ctx, query, order.Status, order.Amount).Scan(&order.ID, &order.CreatedAt, &order.UpdatedAt)
+
+	return repository.db.QueryRowContext(
+		ctx,
+		query,
+		order.UserID,
+		order.ProductID,
+		order.Amount,
+		order.Status,
+	).Scan(&order.ID, &order.CreatedAt, &order.UpdatedAt)
 }
 func (repository *OrderRepository) UpdateStatus(ctx context.Context, status string, id int64) error {
 	query := `

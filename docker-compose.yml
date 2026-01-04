@@ -1,0 +1,135 @@
+version: "3.9"
+
+services:
+  # ---------- USER API ----------
+  user-api:
+    build: ./gostart
+    container_name: user-api
+    ports:
+      - "8081:8080"
+    environment:
+      - HTTP_PORT=8080
+      - JWT_SECRET=supersecret
+      - POSTGRES_DSN=postgres://postgres:postgres@user-db:5432/users?sslmode=disable
+    depends_on:
+      - user-db
+    networks:
+      - backend
+
+  user-db:
+    image: postgres:16
+    container_name: user-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: users
+    volumes:
+      - user_pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  user-migrate:
+    image: migrate/migrate
+    depends_on:
+      - user-db
+    volumes:
+      - ./gostart/migrations:/migrations
+    command: [
+      "-path", "/migrations",
+      "-database", "postgres://postgres:postgres@user-db:5432/users?sslmode=disable",
+      "up"
+    ]
+    networks:
+      - backend
+
+  # ---------- CATALOG API ----------
+  catalog-api:
+    build: ./catalog/shop-api
+    container_name: catalog-api
+    ports:
+      - "8082:8080"
+    environment:
+      - HTTP_PORT=8080
+      - POSTGRES_DSN=postgres://postgres:postgres@catalog-db:5432/catalog?sslmode=disable
+    depends_on:
+      - catalog-db
+    networks:
+      - backend
+
+  catalog-db:
+    image: postgres:16
+    container_name: catalog-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: catalog
+    volumes:
+      - catalog_pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  catalog-migrate:
+    image: migrate/migrate
+    depends_on:
+      - catalog-db
+    volumes:
+      - ./catalog/shop-api/migrations:/migrations
+    command: [
+      "-path", "/migrations",
+      "-database", "postgres://postgres:postgres@catalog-db:5432/catalog?sslmode=disable",
+      "up"
+    ]
+    networks:
+      - backend
+
+  # ---------- ORDERS API ----------
+  orders-api:
+    build: ./orderAPI/Go-OrdersAPI
+    container_name: orders-api
+    ports:
+      - "8080:8080"
+    environment:
+      - HTTP_PORT=8080
+      - USER_API_URL=http://user-api:8080
+      - PRODUCT_API_URL=http://catalog-api:8080
+      - POSTGRES_DSN=postgres://postgres:postgres@orders-db:5432/orders?sslmode=disable
+    depends_on:
+      - orders-db
+      - user-api
+      - catalog-api
+    networks:
+      - backend
+
+  orders-db:
+    image: postgres:16
+    container_name: orders-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: orders
+    volumes:
+      - orders_pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  orders-migrate:
+    image: migrate/migrate
+    depends_on:
+      - orders-db
+    volumes:
+      - ./orderAPI/GO-OrdersAPI/migrations:/migrations
+    command: [
+      "-path", "/migrations",
+      "-database", "postgres://postgres:postgres@orders-db:5432/orders?sslmode=disable",
+      "up"
+    ]
+    networks:
+      - backend
+
+networks:
+  backend:
+
+volumes:
+  user_pgdata:
+  catalog_pgdata:
+  orders_pgdata:
