@@ -14,9 +14,9 @@ func NewRouter(orderService service.OrderService, userClient *client.UserClient,
 	mux := http.NewServeMux()
 	handler := handlers.NewOrderHandler(orderService, userClient, catalogClient)
 	mux.Handle("POST /orders", auth.Middleware(http.HandlerFunc(handler.CreateOrderHandler)))
-	mux.HandleFunc("GET /orders/{id}", handler.GetOrderHandler)
+	mux.Handle("GET /orders/{id}", auth.Middleware(http.HandlerFunc(handler.GetOrderHandler)))
 	mux.HandleFunc("PUT /orders/{id}", handler.UpdateOrderHandler)
-	mux.HandleFunc("GET /orders", handler.GetOrders)
+	mux.Handle("GET /orders", auth.Middleware(http.HandlerFunc(handler.GetOrders)))
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

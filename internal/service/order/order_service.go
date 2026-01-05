@@ -44,11 +44,11 @@ func (s *Service) CreateOrder(ctx context.Context, amount int64, product_id int6
 
 	return order, nil
 }
-func (s *Service) GetOrder(ctx context.Context, id int64) (*model.Order, error) {
+func (s *Service) GetOrder(ctx context.Context, id int64, userID int64) (*model.Order, error) {
 	if id <= 0 {
 		return nil, errors.New("id must be greater than zero")
 	}
-	order, err := s.repo.GetById(ctx, id)
+	order, err := s.repo.GetById(ctx, id, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +63,11 @@ func (s *Service) UpdateOrder(ctx context.Context, status string, id int64) erro
 	}
 	return s.repo.UpdateStatus(ctx, status, id)
 }
-func (s *Service) GetOrders(ctx context.Context) ([]model.Order, error) {
-	return s.repo.GetList(ctx)
+func (s *Service) GetOrders(ctx context.Context, userID int64) ([]model.Order, error) {
+	if userID <= 0 {
+		return nil, errors.New("user_id must be greater than zero")
+	}
+	return s.repo.GetList(ctx, userID)
 }
 
 func isValidStatus(status string) bool {

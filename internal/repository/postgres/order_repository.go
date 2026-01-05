@@ -14,9 +14,9 @@ func NewOrderRepository(db *sql.DB) *OrderRepository {
 	return &OrderRepository{db: db}
 }
 
-func (repository *OrderRepository) GetList(ctx context.Context) ([]model.Order, error) {
+func (repository *OrderRepository) GetList(ctx context.Context, userID int64) ([]model.Order, error) {
 	var orders []model.Order
-	rows, err := repository.db.Query("SELECT id,status,amount,product_id,user_id,created_at,updated_at FROM orders ORDER BY id")
+	rows, err := repository.db.Query("SELECT id,status,amount,product_id,user_id,created_at,updated_at FROM orders WHERE user_id = $1 ORDER BY created_at", userID)
 	if err == sql.ErrNoRows {
 		return orders, nil
 	}
@@ -67,14 +67,14 @@ func (repository *OrderRepository) UpdateStatus(ctx context.Context, status stri
 	_, err := repository.db.ExecContext(ctx, query, status, id)
 	return err
 }
-func (repository *OrderRepository) GetById(ctx context.Context, id int64) (*model.Order, error) {
+func (repository *OrderRepository) GetById(ctx context.Context, id int64, userID int64) (*model.Order, error) {
 	var order model.Order
 	query := `
 		SELECT id, status, amount, created_at, updated_at
 		FROM orders
-		WHERE id = $1
+		WHERE id = $1 AND user_id = $2
 	`
-	err := repository.db.QueryRowContext(ctx, query, id).Scan(&order.ID, &order.Status, &order.Amount, &order.CreatedAt, &order.UpdatedAt)
+	err := repository.db.QueryRowContext(ctx, query, id, userID).Scan(&order.ID, &order.Status, &order.Amount, &order.CreatedAt, &order.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}

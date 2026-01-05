@@ -61,7 +61,12 @@ func (s *OrderHandler) GetOrderHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	order, err := s.service.GetOrder(ctx, id)
+	userID, err := auth.UserIDFromContext(ctx)
+	if err != nil {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	order, err := s.service.GetOrder(ctx, id, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -74,7 +79,14 @@ func (s *OrderHandler) GetOrderHandler(w http.ResponseWriter, r *http.Request) {
 }
 func (s *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	orders, err := s.service.GetOrders(ctx)
+
+	userID, err := auth.UserIDFromContext(ctx)
+	if err != nil {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	orders, err := s.service.GetOrders(ctx, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
