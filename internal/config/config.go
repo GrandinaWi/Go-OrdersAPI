@@ -7,9 +7,11 @@ import (
 
 type Config struct {
 	HTTPPort      string
+	JWTSecret     []byte
 	PostgresDSN   string
 	UserAPIURL    string
 	ProductAPIURL string
+	OrdersAPIURL  string
 }
 
 func LoadConfig() (*Config, error) {
@@ -29,10 +31,20 @@ func LoadConfig() (*Config, error) {
 	if productAPIURL == "" {
 		return nil, fmt.Errorf("PRODUCT_API_URL is required")
 	}
+	jwtSecret := []byte(os.Getenv("JWT_SECRET"))
+	if len(jwtSecret) == 0 {
+		return nil, fmt.Errorf("JWT_SECRET is required")
+	}
+	ordersAPIURL := os.Getenv("ORDERS_API_URL")
+	if ordersAPIURL == "" {
+		return nil, fmt.Errorf("ORDERS_API_URL is required")
+	}
 	return &Config{
 		HTTPPort:      port,
+		JWTSecret:     jwtSecret,
 		PostgresDSN:   postgresDSN,
 		UserAPIURL:    userAPIURL,
 		ProductAPIURL: productAPIURL,
+		OrdersAPIURL:  ordersAPIURL,
 	}, nil
 }
