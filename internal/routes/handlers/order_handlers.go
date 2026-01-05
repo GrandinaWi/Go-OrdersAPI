@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"OrderAPI/internal/auth"
 	"OrderAPI/internal/client"
 	"OrderAPI/internal/service"
 	"encoding/json"
@@ -39,9 +38,15 @@ func (s *OrderHandler) CreateOrderHandler(w http.ResponseWriter, r *http.Request
 		http.Error(w, "invalid request data", http.StatusBadRequest)
 		return
 	}
-	userID, err := auth.UserIDFromContext(ctx)
-	if err != nil {
+	userIDStr := r.Header.Get("X-User-ID")
+	if userIDStr == "" {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid user id", http.StatusUnauthorized)
 		return
 	}
 	order, err := s.service.CreateOrder(ctx, req.Amount, req.ProductID, userID)
@@ -61,9 +66,15 @@ func (s *OrderHandler) GetOrderHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	userID, err := auth.UserIDFromContext(ctx)
-	if err != nil {
+	userIDStr := r.Header.Get("X-User-ID")
+	if userIDStr == "" {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid user id", http.StatusUnauthorized)
 		return
 	}
 	order, err := s.service.GetOrder(ctx, id, userID)
@@ -80,9 +91,15 @@ func (s *OrderHandler) GetOrderHandler(w http.ResponseWriter, r *http.Request) {
 func (s *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	userID, err := auth.UserIDFromContext(ctx)
-	if err != nil {
+	userIDStr := r.Header.Get("X-User-ID")
+	if userIDStr == "" {
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		http.Error(w, "invalid user id", http.StatusUnauthorized)
 		return
 	}
 
