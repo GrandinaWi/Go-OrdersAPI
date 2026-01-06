@@ -14,12 +14,14 @@ type CatalogClient struct {
 func NewCatalogClient(baseURL string) *CatalogClient {
 	return &CatalogClient{baseURL: baseURL}
 }
-func (c *CatalogClient) CheckProduct(ctx context.Context, productId string) error {
-	resp, err := http.Get(fmt.Sprintf("%s/products/%s", c.baseURL, productId))
+func (c *CatalogClient) CheckProduct(ctx context.Context, productId int64) error {
+	url := fmt.Sprintf("%s/products/%d", c.baseURL, productId)
+	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
+
 	if resp.StatusCode != http.StatusOK {
 		return errors.New("product not found")
 	}

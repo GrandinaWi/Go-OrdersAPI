@@ -25,9 +25,9 @@ func LoadConfig() (*Config, error) {
 	if userAPIURL == "" {
 		return nil, fmt.Errorf("USER_API_URL is required")
 	}
-	productAPIURL := os.Getenv("PRODUCT_API_URL")
+	productAPIURL := os.Getenv("CATALOG_API_URL")
 	if productAPIURL == "" {
-		return nil, fmt.Errorf("PRODUCT_API_URL is required")
+		return nil, fmt.Errorf("CATALOG_API_URL is required")
 	}
 	return &Config{
 		HTTPPort:      port,

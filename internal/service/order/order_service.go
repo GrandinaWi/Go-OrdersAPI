@@ -1,6 +1,7 @@
 package order
 
 import (
+	"OrderAPI/internal/client"
 	"OrderAPI/internal/model"
 	"OrderAPI/internal/repository"
 	"context"
@@ -15,7 +16,8 @@ const (
 )
 
 type Service struct {
-	repo repository.OrderRepository
+	repo          repository.OrderRepository
+	catalogClient client.CatalogClient
 }
 
 func NewOrderService(repo repository.OrderRepository) *Service {
